@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,8 +28,8 @@
         </div>
     </div>
     <div>
-        <button onclick="heji('/data/m3u8_20230802_1.txt')">合集1</button>
-        <button onclick="heji('/data/m3u8_20230802_2.txt')">合集2</button>
+        <button onclick="heji('https://raw.githubusercontent.com/m3u8playlist/dp/master/iplayr/600.txt')">合集1</button>
+        <button onclick="heji('https://raw.githubusercontent.com/YanG-1989/m3u/main/Adult.m3u')">合集2</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
@@ -109,23 +110,22 @@
 
     <style>
         @media screen and (min-width: 1200px) {
-            
+
             .container {
                 display: flex;
                 justify-content: center;
+                height: 80vh;
             }
 
             .sidebar-title {
                 border: 1px solid #000;
                 text-align: center;
-                font-size: 1px;
                 color: white;
             }
 
             #dplayer {
                 text-align: center;
                 width: 60%;
-                height: 450px;
                 margin-top: 20px;
 
             }
@@ -135,12 +135,10 @@
                 border: 1px solid;
                 width: 26%;
                 margin-right: -13%;
-                height: 450px;
             }
 
 
             .playlist li {
-                font-size: 1px;
             }
 
 
@@ -186,11 +184,12 @@
 
 
         .search textarea {
-            width: 50%;
+            width: 40%;
             height: 1.3em;
             margin-bottom: -0.5em;
-            padding: 0.5em;
+            padding: 0.6em 0.5em 0.5em 0.5em;
             border-radius: 8px;
+            font-size: 1.3em;
         }
 
         .search button {
@@ -248,6 +247,12 @@
 
         .clear {
             float: right;
+        }
+
+        button {
+            font-size: 1em;
+            /* width: 4em; */
+            height: 2em;
         }
     </style>
 
