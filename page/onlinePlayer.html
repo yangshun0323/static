@@ -11,7 +11,8 @@
 
 <body>
     <div class="search">
-        <input id="inputurl" placeholder="在此处粘贴播放地址或者合集地址" />
+        <textarea id="inputurl" placeholder="在此处粘贴播放地址或者合集地址"></textarea>
+
         <button onclick="onPlay()">播放</button>
         <button onclick="onImport()" id="import">导入合集</button>
     </div>
@@ -38,7 +39,7 @@
         function init(url) {
             const dp = new DPlayer({
                 autoplay: true,
-                hotkey:true,
+                hotkey: true,
                 container: document.getElementById('dplayer'),
                 video: {
                     url: url,
@@ -65,15 +66,15 @@
                 for (let url of urlArr) {
                     let urls = url.split("\n");
                     if (urls.length > 1) {
-                        playlist += createPlayHtml(urls[1].trim(), urls[0].replace("-1 group-title=", ""));
+                        playlist += createPlayHtml(urls[1], urls[0].replace("-1 group-title=", ""));
                     }
                 }
             } else {
                 const urlArr = res.split("\n");
                 console.log(urlArr.length);
                 for (let url of urlArr) {
-                    let urls = url.split(",");
-                    playlist += createPlayHtml(urls[1].trim(), urls[0]);
+                    let urls = url.split(",http");
+                    playlist += createPlayHtml('http' + urls[1], urls[0]);
                 }
             }
 
@@ -111,6 +112,10 @@
     <style>
         @media screen and (min-width: 1200px) {
 
+            body {
+                zoom: 150%;
+            }
+
             .container {
                 display: flex;
                 justify-content: center;
@@ -143,6 +148,8 @@
             .playlist li {
                 font-size: 1px;
             }
+
+
         }
 
         @media screen and (max-width: 600px) {
@@ -184,9 +191,12 @@
 
 
 
-        .search input {
+        .search textarea {
             width: 50%;
-            height: 2em;
+            height: 1.3em;
+            margin-bottom: -0.5em;
+            padding: 0.5em;
+            border-radius: 8px;
         }
 
         .search button {
