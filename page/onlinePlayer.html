@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <link rel="icon" href="/favicon.ico"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>m3u8视频播放器</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.1.5/dist/hls.min.js"></script>
+</head>
+
+<body>
+    <div class="search">
+        <input id="inputurl" placeholder="在此处粘贴播放地址或者合集地址" />
+        <button onclick="onPlay()">播放</button>
+        <button onclick="onImport()" id="import">导入合集</button>
+    </div>
+    <div class="container">
+        <div id="dplayer"></div>
+        <div class="sidebar">
+            <div class="sidebar-title">播放列表(<span id="listsize"></span></span>)<span class="clear"
+                    onclick="clearlist()">清空</span></div>
+            <div class="player">
+                <ul class="playlist">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div>
+        <button onclick="heji('https://raw.githubusercontent.com/m3u8playlist/dp/master/iplayr/600.txt')">合集1</button>
+        <button onclick="heji('https://raw.githubusercontent.com/YanG-1989/m3u/main/Adult.m3u')">合集2</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
+    <script>
+        init(`https://ypmnkbb.saejeuj.com/api/app/media/m3u8/av/8v/45/pi/sf/049e460a47e94faabd6e1b7bda0bb6ba.m3u8?`);
+        function init(url) {
+            const dp = new DPlayer({
+                autoplay: true,
+                hotkey:true,
+                container: document.getElementById('dplayer'),
+                video: {
+                    url: url,
+                },
+            });
+        }
+
+        getListsize();
+
+        function onPlay() {
+            const url = document.getElementById("inputurl").value;
+            init(url.trim());
+            document.getElementsByClassName("playlist")[0].innerHTML = document.getElementsByClassName("playlist")[0].innerHTML + createPlayHtml(url);
+            getListsize();
+        }
+
+        async function onImport() {
+            const url = document.getElementById("inputurl").value;
+
+            const res = await fetch(url).then((res) => { return res.text() })
+            let playlist = ``;
+            if (res.includes("#EXTM3U")) {
+                const urlArr = res.split("\n#EXTINF:");
+                for (let url of urlArr) {
+                    let urls = url.split("\n");
+                    if (urls.length > 1) {
+                        playlist += createPlayHtml(urls[1].trim(), urls[0].replace("-1 group-title=", ""));
+                    }
+                }
+            } else {
+                const urlArr = res.split("\n");
+                console.log(urlArr.length);
+                for (let url of urlArr) {
+                    let urls = url.split(",");
+                    playlist += createPlayHtml(urls[1].trim(), urls[0]);
+                }
+            }
+
+            document.getElementsByClassName("playlist")[0].innerHTML = document.getElementsByClassName("playlist")[0].innerHTML + playlist;
+            getListsize();
+
+        }
+
+        function createPlayHtml(url = "", title = "未命名" + new Date().getTime()) {
+            return ` <li onclick="init('${url.trim()}')">
+                        <div class="icon"></div>
+                        <div class="title">${title}</div>
+                    </li>`;
+        }
+
+        function clearlist() {
+            document.getElementsByClassName("playlist")[0].innerHTML = "";
+            getListsize();
+        }
+
+
+        function heji(url) {
+            document.getElementById("inputurl").value = url;
+            document.getElementById("import").click();
+        }
+
+
+        function getListsize() {
+            document.getElementById("listsize").innerHTML = document.getElementsByClassName("playlist")[0].getElementsByTagName("li").length;
+        }
+
+
+    </script>
+
+    <style>
+        @media screen and (min-width: 1200px) {
+
+            .container {
+                display: flex;
+                justify-content: center;
+            }
+
+            .sidebar-title {
+                border: 1px solid #000;
+                text-align: center;
+                font-size: 1px;
+                color: white;
+            }
+
+            #dplayer {
+                text-align: center;
+                width: 60%;
+                height: 450px;
+                margin-top: 20px;
+
+            }
+
+            .sidebar {
+                margin-top: 20px;
+                border: 1px solid;
+                width: 26%;
+                margin-right: -13%;
+                height: 450px;
+            }
+
+
+            .playlist li {
+                font-size: 1px;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                justify-content: center;
+            }
+
+            #dplayer {
+                text-align: center;
+                width: 100%;
+                height: 100%;
+                margin-top: 20px;
+
+            }
+
+            .sidebar {
+                margin-top: 20px;
+                border: 1px solid;
+                width: 100%;
+                margin-right: -13%;
+                height: 600px;
+            }
+
+            .sidebar-title {
+                border: 1px solid #000;
+                text-align: center;
+                color: white;
+            }
+        }
+
+        body {
+            background-color: #282c34;
+        }
+
+        .search {
+            text-align: center;
+            margin-left: -8%;
+        }
+
+
+
+        .search input {
+            width: 50%;
+            height: 2em;
+        }
+
+        .search button {
+            margin-left: 1em;
+        }
+
+
+
+
+        /* 播放器容器样式 */
+        .player {
+            padding: 0.5em 0 0.5em 0.5em;
+            height: 100%;
+        }
+
+        /* 播放列表的 ul 样式 */
+        .playlist {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            height: 94%;
+        }
+
+        /* 播放列表项的 li 样式 */
+        .playlist li {
+            align-items: center;
+            padding: 2px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        /* 播放列表项图标的样式 */
+        /* .playlist li .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-color: #555555;
+        } */
+
+        .title {
+            white-space: nowrap;
+            /* 文字不换行 */
+            overflow: hidden;
+            /* 超出部分隐藏 */
+            text-overflow: ellipsis;
+            /* 超出部分显示省略号 */
+        }
+
+        /* 播放列表项的鼠标悬停样式 */
+        .playlist li:hover {
+            background-color: #555555;
+        }
+
+        .clear {
+            float: right;
+        }
+    </style>
+
+</body>
+
+
+
+</html>
