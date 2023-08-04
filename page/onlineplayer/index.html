@@ -28,13 +28,23 @@
             </div>
         </div>
     </div>
-    <div>
-        <button onclick="heji('/data/m3u8_20230802_1.txt')">合集1</button> 
-        <button onclick="heji('/data/m3u8_20230802_2.txt')">合集2</button>
+    <div id="compositionbtns">
+       
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
     <script>
+
+
+        fetch("https://raw.githubusercontent.com/yangshun0323/static/main/data/m3u8_composition.json").then((res)=>{return res.json();}).then((res)=>{
+           let btns  =``;
+            for(var r of res){
+               btns += `<button onclick="heji('${r.url}')">${r.title}</button> `;
+            }
+            document.getElementById("compositionbtns").innerHTML = btns;
+        });
+
+
         init(`https://ypmnkbb.saejeuj.com/api/app/media/m3u8/av/8v/45/pi/sf/049e460a47e94faabd6e1b7bda0bb6ba.m3u8?`);
         function init(url) {
             const dp = new DPlayer({
