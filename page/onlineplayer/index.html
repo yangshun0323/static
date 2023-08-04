@@ -35,7 +35,9 @@
     <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
     <script>
 
-
+        // 刷新缓存
+        await fetch("https://purge.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json");
+        
         fetch("https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json").then((res)=>{return res.json();}).then((res)=>{
            let btns  =``;
             for(var r of res){
