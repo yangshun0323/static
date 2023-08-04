@@ -36,8 +36,10 @@
     <script>
 
         // 刷新缓存
-        await fetch("https://purge.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json");
-        
+        (async function() {
+            await fetch("https://purge.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json");
+        })();
+
         fetch("https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json").then((res)=>{return res.json();}).then((res)=>{
            let btns  =``;
             for(var r of res){
