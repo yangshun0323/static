@@ -36,7 +36,7 @@
     <script>
 
 
-        fetch("https://raw.githubusercontent.com/yangshun0323/static/main/data/m3u8_composition.json").then((res)=>{return res.json();}).then((res)=>{
+        fetch("https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json").then((res)=>{return res.json();}).then((res)=>{
            let btns  =``;
             for(var r of res){
                btns += `<button onclick="heji('${r.url}')">${r.title}</button> `;
