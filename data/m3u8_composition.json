@@ -4,11 +4,11 @@
         "url":"https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_20230802_1.txt"
     },
     {
-        "title":"合集2",
+        "title":"玩偶麻豆",
         "url":"https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_20230802_2.txt"
     },
     {
-        "title":"合集3",
-        "url":"1222"
+        "title":"IPTV",
+        "url":"https://cdn.jsdelivr.net/gh/zhoutv/m3u/goodiptv.txt"
     }
 ]
