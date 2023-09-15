@@ -12,9 +12,10 @@
 <body>
     <div class="search">
         <textarea id="inputurl" placeholder="在此处粘贴播放地址或者合集地址"></textarea>
-
         <button onclick="onPlay()">播放</button>
         <button onclick="onImport()" id="import">导入合集</button>
+        <a href="javascript:void(0);" onclick="refreshCache()"
+            <!-- style="position: absolute;bottom: 0;right: 0;">刷新缓存</a> -->
     </div>
     <div class="container">
         <div id="dplayer"></div>
@@ -42,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js"></script>
     <script>
 
-        fetch("https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json?t="+new Date().getTime()).then((res) => { return res.json(); }).then((res) => {
+        fetch("/data/m3u8_composition.json?t=" + new Date().getTime()).then((res) => { return res.json(); }).then((res) => {
             let btns = ``;
             for (var r of res) {
                 btns += `<button onclick="heji('${r.url}')">${r.title}</button> `;
@@ -123,28 +124,33 @@
         }
 
         function openadult() {
-            const token  = sessionStorage.getItem("login-token" )
+            const token = sessionStorage.getItem("login-token")
             var password = null;
-            if(token != '1'){
-                password =  prompt("请输入访问密码");
+            if (token != '1') {
+                password = prompt("请输入访问密码");
             }
             const currentDate = new Date();
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1;
             const day = currentDate.getDate();
-            if (password == `${year}${month < 10 ? '0' + month : month}${day < 10 ? '0' + day : day}` ||  token == '1') {
-                sessionStorage.setItem("login-token","1")
-                fetch("https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition_18ban.json?t="+new Date().getTime()).then((res) => { return res.json(); }).then((res) => {
+            if (password == `${year}${month < 10 ? '0' + month : month}${day < 10 ? '0' + day : day}` || token == '1') {
+                sessionStorage.setItem("login-token", "1")
+                fetch("/data/m3u8_composition_18ban.json?t=" + new Date().getTime()).then((res) => { return res.json(); }).then((res) => {
                     let btns = ``;
                     for (var r of res) {
                         btns += `<button onclick="heji('${r.url}')">${r.title}</button> `;
                     }
-                    document.getElementById("compositionbtns").innerHTML = document.getElementById("compositionbtns").innerHTML+btns;
+                    document.getElementById("compositionbtns").innerHTML = document.getElementById("compositionbtns").innerHTML + btns;
                 });
             } else {
                 alert("密码错误");
             }
         }
+
+        // function refreshCache() {
+        //     fetch("https://purge.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition_18ban.json");
+        //     fetch("https://purge.jsdelivr.net/gh/yangshun0323/static/data/m3u8_composition.json");
+        // }
 
 
     </script>
