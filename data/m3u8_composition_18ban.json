@@ -1,1 +1,10 @@
-[]
+[
+  {
+        "title":"合集1",
+        "url":"https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_20230802_1.txt"
+    },
+    {
+        "title":"玩偶麻豆",
+        "url":"https://cdn.jsdelivr.net/gh/yangshun0323/static/data/m3u8_20230802_2.txt"
+    },
+]
