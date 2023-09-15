@@ -2,9 +2,5 @@
     {
         "title":"IPTV",
         "url":"https://cdn.jsdelivr.net/gh/zhoutv/m3u/goodiptv.txt"
-    },
-     {
-        "title":"IPTV2",
-        "url":"https://cdn.jsdelivr.net/gh/zhoutv/m3u/goodiptv.txt"
     }
 ]
