@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短视频美女墙</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a; color: #fff; overflow-x: hidden;
+        }
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; height: 44px;
+            background: rgba(10,10,10,0.95); backdrop-filter: blur(16px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 1000; border-bottom: 1px solid #222;
+        }
+        .header h1 {
+            font-size: 16px; font-weight: 700;
+            background: linear-gradient(135deg, #fe2c55, #ff6b9d, #25f4ee);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header .status { font-size: 11px; color: #666; }
+        .grid {
+            display: grid; gap: 8px;
+            padding: 52px 8px 8px; width: 100%;
+        }
+        .card {
+            position: relative; overflow: hidden;
+            background: #111; cursor: pointer;
+            border-radius: 8px; aspect-ratio: 9/16;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(254,44,85,0.4);
+            z-index: 10;
+        }
+        .card video {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 8px;
+        }
+        .card .info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 24px 8px 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            font-size: 11px; color: #ccc;
+            opacity: 0; transition: opacity 0.3s;
+            border-radius: 0 0 8px 8px;
+        }
+        .card:hover .info { opacity: 1; }
+        .card .info .author { color: #fe2c55; font-weight: 600; }
+
+        .play-icon {
+            display: none;
+        }
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-box {
+            position: relative; height: 90vh; background: #000;
+            border-radius: 12px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-box video {
+            height: 100%; width: auto; max-width: 90vw;
+            object-fit: contain; border-radius: 12px;
+        }
+        .modal-close {
+            position: absolute; top: 12px; right: 12px; z-index: 2001;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.2); border: none;
+            color: #fff; font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.4); }
+        .modal-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 30px 16px 16px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            font-size: 14px; color: #ddd; border-radius: 0 0 12px 12px;
+        }
+
+        .loading {
+            text-align: center; padding: 30px; color: #333; font-size: 12px;
+            width: 100%;
+        }
+        .spinner {
+            width: 28px; height: 28px; border: 2px solid #222;
+            border-top-color: #fe2c55; border-radius: 50%;
+            animation: spin 0.7s linear infinite; margin: 0 auto 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>美女视频墙</h1>
+        <span class="status" id="status">加载中...</span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="loading" id="loading">
+        <p>下拉加载更多...</p>
+    </div>
+    <div class="modal" id="modal">
+        <button class="modal-close" id="closeBtn">&#10005;</button>
+        <div class="modal-box">
+            <video id="modalVideo" controls playsinline></video>
+            <div class="modal-info" id="modalInfo"></div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const grid = document.getElementById('grid');
+        const modal = document.getElementById('modal');
+        const modalVideo = document.getElementById('modalVideo');
+        const modalInfo = document.getElementById('modalInfo');
+        const closeBtn = document.getElementById('closeBtn');
+        const loading = document.getElementById('loading');
+        const status = document.getElementById('status');
+
+        const APIs = [
+            { url: 'https://api.qhsou.com/api/sjdy.php', parse: d => ({ video: d.url, author: d.name || '抖音小姐姐' }) },
+            { url: 'https://api.kuleu.com/api/MP4_xiaojiejie?type=json', parse: d => ({ video: d.mp4_video, author: '小姐姐' }) },
+            { url: 'https://api.yujn.cn/api/zzxjj.php?type=json', parse: d => ({ video: d.data, author: d.title || '小姐姐' }) },
+        ];
+
+        let apiIdx = 0, loaded = 0, loadingMore = false;
+        const videoSet = new Set();  // 去重用
+        const videoEls = [];         // 存所有video元素引用
+
+        function getCols() {
+            const w = window.innerWidth;
+            if (w >= 1920) return 12;
+            if (w >= 1440) return 10;
+            if (w >= 1200) return 8;
+            if (w >= 992) return 6;
+            if (w >= 768) return 5;
+            if (w >= 576) return 4;
+            if (w >= 400) return 3;
+            return 2;
+        }
+
+        function updateGrid() { grid.style.gridTemplateColumns = `repeat(${getCols()}, 1fr)`; }
+        function getLoadCount() { return getCols() * 2; }
+
+        async function fetchVideo() {
+            for (let i = 0; i < APIs.length; i++) {
+                const api = APIs[(apiIdx + i) % APIs.length];
+                try {
+                    const r = await fetch(api.url, { cache: 'no-store' });
+                    if (!r.ok) continue;
+                    const d = await r.json();
+                    const item = api.parse(d);
+                    if (item && item.video) {
+                        apiIdx = (apiIdx + i + 1) % APIs.length;
+                        return item;
+                    }
+                } catch (e) { continue; }
+            }
+            return null;
+        }
+
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const video = document.createElement('video');
+            video.src = item.video;
+            video.muted = true;
+            video.loop = true;
+            video.preload = 'metadata';
+            video.playsInline = true;
+
+            const icon = document.createElement('div');
+            icon.className = 'play-icon';
+
+            const info = document.createElement('div');
+            info.className = 'info';
+            info.innerHTML = `<span class="author">${item.author}</span>`;
+
+            card.appendChild(video);
+            card.appendChild(icon);
+            card.appendChild(info);
+
+            card.addEventListener('mouseenter', () => {
+                video.muted = false;
+                video.play().catch(() => {
+                    video.muted = true;
+                    video.play().catch(() => {});
+                });
+            });
+            card.addEventListener('mouseleave', () => {
+                video.pause();
+                video.currentTime = 0;
+            });
+            card.addEventListener('click', () => openModal(item));
+
+            return card;
+        }
+
+        // 回收不可见的video：只清src，不动DOM
+        function unloadVideo(video) {
+            if (!video.src) return;
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+        }
+
+        // 恢复video
+        function reloadVideo(video, url) {
+            if (video.src) return;
+            video.src = url;
+            video.preload = 'metadata';
+        }
+
+        // 监控可见性：不可见的清src，可见的恢复src
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                const url = video.dataset.src;
+                if (!url) return;
+                if (entry.intersectionRatio > 0) {
+                    reloadVideo(video, url);
+                } else {
+                    unloadVideo(video);
+                }
+            });
+        }, { rootMargin: '800px 0px' });
+
+        async function loadBatch(count) {
+            if (loadingMore) return;
+            loadingMore = true;
+
+            try {
+                const tasks = [];
+                for (let i = 0; i < count; i++) tasks.push(fetchVideo().catch(() => null));
+                const results = await Promise.all(tasks);
+
+                for (const item of results) {
+                    if (!item || !item.video || videoSet.has(item.video)) continue;
+                    videoSet.add(item.video);
+
+                    const card = createCard(item);
+                    const video = card.querySelector('video');
+                    video.dataset.src = item.video;
+                    videoEls.push(video);
+
+                    grid.appendChild(card);
+                    observer.observe(video);
+                    loaded++;
+                }
+                status.textContent = `已加载 ${loaded} 个视频`;
+            } catch (e) {
+                console.error('加载失败:', e);
+            } finally {
+                loadingMore = false;
+            }
+        }
+
+        function openModal(item) {
+            modalVideo.src = item.video;
+            modalVideo.muted = false;
+            modalInfo.innerHTML = `<strong>${item.author}</strong>`;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            modalVideo.play().catch(() => {});
+        }
+
+        function closeModalFn() {
+            modal.classList.remove('active');
+            modalVideo.pause();
+            modalVideo.src = '';
+            document.body.style.overflow = '';
+        }
+
+        window.addEventListener('resize', updateGrid);
+
+        // 用IntersectionObserver监听底部loading元素
+        const loadMoreObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !loadingMore) {
+                loadBatch(getLoadCount());
+            }
+        }, { rootMargin: '200px 0px' });
+        loadMoreObserver.observe(loading);
+
+        closeBtn.addEventListener('click', closeModalFn);
+        modal.addEventListener('click', e => { if (e.target === modal) closeModalFn(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalFn(); });
+
+        updateGrid();
+        loadBatch(getLoadCount() * 2);
+    })();
+    </script>
+</body>
+</html>
